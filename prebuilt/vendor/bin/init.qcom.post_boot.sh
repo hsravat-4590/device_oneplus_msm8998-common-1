@@ -3509,7 +3509,7 @@ case "$target" in
 	echo 1574400 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/hispeed_freq
 	echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/pl
 	echo "0:1324800" > /sys/module/cpu_boost/parameters/input_boost_freq
-	echo 200 > /sys/module/cpu_boost/parameters/input_boost_ms
+	echo 120 > /sys/module/cpu_boost/parameters/input_boost_ms
 
 	# Enable Adaptive LMK liuyaxin@framework.perf change
 	echo "18432,23040,27648,51256,150296,200640" > /sys/module/lowmemorykiller/parameters/minfree
@@ -3585,7 +3585,7 @@ case "$target" in
         # Setup final blkio
         # value for group_idle is us
         echo 1000 > /dev/blkio/blkio.weight
-        echo 100 > /dev/blkio/background/blkio.weight
+        echo 10 > /dev/blkio/background/blkio.weight
         echo 2000 > /dev/blkio/blkio.group_idle
         echo 0 > /dev/blkio/background/blkio.group_idle
 
@@ -3792,35 +3792,104 @@ esac
 case "$target" in
     "msm8998" | "apq8098_latv")
 
-    # disable thermal bcl hotplug to switch governor
-    echo 0 > /sys/module/msm_thermal/core_control/enabled
+	echo 2 > /sys/devices/system/cpu/cpu4/core_ctl/min_cpus
+	echo 60 > /sys/devices/system/cpu/cpu4/core_ctl/busy_up_thres
+	echo 30 > /sys/devices/system/cpu/cpu4/core_ctl/busy_down_thres
+	echo 100 > /sys/devices/system/cpu/cpu4/core_ctl/offline_delay_ms
+	echo 1 > /sys/devices/system/cpu/cpu4/core_ctl/is_big_cluster
+	echo 4 > /sys/devices/system/cpu/cpu4/core_ctl/task_thres
 
-    # online CPU0
-    echo 1 > /sys/devices/system/cpu/cpu0/online
-    # configure governor settings for little cluster
-    echo "schedutil" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
-    echo 20000 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/down_rate_limit_us
-    echo 500 > /sys/devices/system/cpu/cpu0/cpufreq/schedutil/up_rate_limit_us
-    echo 518400 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
-    # online CPU4
-    echo 1 > /sys/devices/system/cpu/cpu4/online
-    # configure governor settings for big cluster
-    echo "schedutil" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor
-    echo 20000 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/down_rate_limit_us
-    echo 500 > /sys/devices/system/cpu/cpu4/cpufreq/schedutil/up_rate_limit_us
+	# Enable sched systrace
+	echo 1 >  /sys/kernel/debug/tracing/events/sched/sched_get_task_cpu_cycles/enable
+
+	# Setting b.L scheduler parameters
+	echo 1 > /proc/sys/kernel/sched_migration_fixup
+	echo 95 > /proc/sys/kernel/sched_upmigrate
+	echo 90 > /proc/sys/kernel/sched_downmigrate
+	echo 100 > /proc/sys/kernel/sched_group_upmigrate
+	echo 95 > /proc/sys/kernel/sched_group_downmigrate
+	echo 0 > /proc/sys/kernel/sched_select_prev_cpu_us
+	echo 400000 > /proc/sys/kernel/sched_freq_inc_notify
+	echo 400000 > /proc/sys/kernel/sched_freq_dec_notify
+	echo 5 > /proc/sys/kernel/sched_spill_nr_run
+	echo 1 > /proc/sys/kernel/sched_restrict_cluster_spill
+        echo 1 > /proc/sys/kernel/sched_prefer_sync_wakee_to_waker
+	start iop
+
+        # disable thermal bcl hotplug to switch governor
+        echo 0 > /sys/module/msm_thermal/core_control/enabled
+
+        # online CPU0
+        echo 1 > /sys/devices/system/cpu/cpu0/online
+	# configure governor settings for little cluster
+	echo "interactive" > /sys/devices/system/cpu/cpu0/cpufreq/scaling_governor
+	echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/use_sched_load
+	echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/use_migration_notif
+	echo 19000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/above_hispeed_delay
+	echo 90 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/go_hispeed_load
+	echo 20000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/timer_rate
+	echo 1248000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/hispeed_freq
+	echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/io_is_busy
+	echo "83 1804800:95" > /sys/devices/system/cpu/cpu0/cpufreq/interactive/target_loads
+	echo 19000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/min_sample_time
+	echo 79000 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/max_freq_hysteresis
+	echo 518400 > /sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq
+	echo 1 > /sys/devices/system/cpu/cpu0/cpufreq/interactive/ignore_hispeed_on_notif
+        # online CPU4
+        echo 1 > /sys/devices/system/cpu/cpu4/online
+	# configure governor settings for big cluster
+	echo "interactive" > /sys/devices/system/cpu/cpu4/cpufreq/scaling_governor
+	echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/use_sched_load
+	echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/use_migration_notif
+	echo 19000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/above_hispeed_delay
+	echo 90 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/go_hispeed_load
+	echo 20000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/timer_rate
+	echo 1574400 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/hispeed_freq
+	echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/io_is_busy
+	echo "83 1939200:90 2016000:95" > /sys/devices/system/cpu/cpu4/cpufreq/interactive/target_loads
+	echo 19000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/min_sample_time
+	echo 79000 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/max_freq_hysteresis
 	echo 806400 > /sys/devices/system/cpu/cpu4/cpufreq/scaling_min_freq
+	echo 1 > /sys/devices/system/cpu/cpu4/cpufreq/interactive/ignore_hispeed_on_notif
 
-    # re-enable thermal and BCL hotplug
-    echo 1 > /sys/module/msm_thermal/core_control/enabled
+        # re-enable thermal and BCL hotplug
+        echo 1 > /sys/module/msm_thermal/core_control/enabled
 
-    # Enable input boost configuration
-    # simon.ma+@2018/09/28,modify the input_boost_freq and input_boost_ms to make the anim smooth
-    echo "0:1036800 4:1056000" > /sys/module/cpu_boost/parameters/input_boost_freq
-    echo 450 > /sys/module/cpu_boost/parameters/input_boost_ms
+        # Enable input boost configuration
+        # simon.ma+@2018/09/28,modify the input_boost_freq and input_boost_ms to make the anim smooth
+        echo "0:1036800 4:1056000" > /sys/module/cpu_boost/parameters/input_boost_freq
+        echo 450 > /sys/module/cpu_boost/parameters/input_boost_ms
+        # Enable bus-dcvs
 
 	# Enable Adaptive LMK denzel.chen
 	echo "18432,23040,27648,51256,150296,200640" > /sys/module/lowmemorykiller/parameters/minfree
 
+
+        for cpubw in /sys/class/devfreq/*qcom,cpubw*
+        do
+            echo "bw_hwmon" > $cpubw/governor
+            echo 50 > $cpubw/polling_interval
+            echo 1525 > $cpubw/min_freq
+            echo "3143 5859 11863 13763" > $cpubw/bw_hwmon/mbps_zones
+            echo 4 > $cpubw/bw_hwmon/sample_ms
+            echo 34 > $cpubw/bw_hwmon/io_percent
+            echo 20 > $cpubw/bw_hwmon/hist_memory
+            echo 10 > $cpubw/bw_hwmon/hyst_length
+            echo 0 > $cpubw/bw_hwmon/low_power_ceil_mbps
+            echo 34 > $cpubw/bw_hwmon/low_power_io_percent
+            echo 20 > $cpubw/bw_hwmon/low_power_delay
+            echo 0 > $cpubw/bw_hwmon/guard_band_mbps
+            echo 250 > $cpubw/bw_hwmon/up_scale
+            echo 1600 > $cpubw/bw_hwmon/idle_mbps
+        done
+
+        for memlat in /sys/class/devfreq/*qcom,memlat-cpu*
+        do
+            echo "mem_latency" > $memlat/governor
+            echo 10 > $memlat/polling_interval
+            echo 400 > $memlat/mem_latency/ratio_ceil
+        done
+        echo "cpufreq" > /sys/class/devfreq/soc:qcom,mincpubw/governor
 	if [ -f /sys/devices/soc0/soc_id ]; then
 		soc_id=`cat /sys/devices/soc0/soc_id`
 	else

@@ -882,6 +882,7 @@ vendor/lib64/libvpplibrary.so|f278c1865ef6c4ce5f7d8681d7e60f0d2ee02f1f
 vendor/lib64/vendor.qti.hardware.vpp@1.1.so
 
 # Perf
+vendor/bin/energy-awareness
 vendor/bin/msm_irqbalance
 
 # Peripheral manager
@@ -1279,9 +1280,7 @@ vendor/lib64/hw/vr.msm8998.so
 
 # Misc
 vendor/etc/graphite_ipc_platform_info.xml
-vendor/lib/libperfgluelayer.so|569bc942fcd54c1a52d345178694917642707b47
 vendor/lib64/libgcs.so
 vendor/lib64/libgcs-calwrapper.so
 vendor/lib64/libgcs-ipc.so
 vendor/lib64/libgcs-osal.so
-vendor/lib64/libperfgluelayer.so|bfb9706a184fca4163e5a7cb5fcad11674958761
